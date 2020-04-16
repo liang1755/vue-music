@@ -47,7 +47,7 @@
             <div class="icon i-left">
               <i class="icon-prev"></i>
             </div>
-            <div class="icon i-center">
+            <div class="icon i-center" @click="togglePlay">
               <i class="needslick"></i>
             </div>
             <div class="icon i-right">
@@ -71,7 +71,7 @@
         <p class="desc" v-html="currentSong.singer"></p>
       </div>
       <div class="control"></div>
-      <div class="control">
+      <div class="control" @click="togglePlay">
         <i class="icon-playlist"></i>
       </div>
     </div>
@@ -144,6 +144,9 @@ export default {
     afterLeave () {
       this.$refs.cdWrapper.style.transition = ''
       this.$refs.cdWrapper.style[transform] = ''
+    },
+    togglePlay () {
+
     },
     _getPosAndScale () {
       const targetWidth = 40
