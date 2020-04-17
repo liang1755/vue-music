@@ -27,7 +27,7 @@
         </div>
         <div class="middle">
           <div class="middle-l">
-            <div class="cd-wrapper">
+            <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd">
                 <img :src="currentSong.image" alt class="image" />
               </div>
@@ -47,8 +47,8 @@
             <div class="icon i-left">
               <i class="icon-prev"></i>
             </div>
-            <div class="icon i-center" @click="togglePlay">
-              <i class="needslick"></i>
+            <div class="icon i-center">
+              <i class="needslick" @click="togglePlay" :class="playIcon"></i>
             </div>
             <div class="icon i-right">
               <i class="icon-next"></i>
@@ -60,23 +60,27 @@
         </div>
       </div>
     </transition>
-    <div class="mini-player" v-show="!fullScreen" @click="open">
-      <div class="icon">
-        <div class="imgWrapper">
-          <img :src="currentSong.image" class="miniImage" width="40" height="40" />
+
+    <transition name="mini">
+      <div class="mini-player" v-show="!fullScreen" @click="open">
+        <div class="icon">
+          <div class="imgWrapper">
+            <img :src="currentSong.image" class="miniImage" width="40" height="40" />
+          </div>
+        </div>
+        <div class="text">
+          <h2 class="name" v-html="currentSong.name"></h2>
+          <p class="desc" v-html="currentSong.singer"></p>
+        </div>
+        <div class="control">
+          <i @click.stop="togglePlay" :class="miniPlayIcon"></i>
+        </div>
+        <div class="control">
+          <i class="icon-playlist"></i>
         </div>
       </div>
-      <div class="text">
-        <h2 class="name" v-html="currentSong.name"></h2>
-        <p class="desc" v-html="currentSong.singer"></p>
-      </div>
-      <div class="control"></div>
-      <div class="control" @click="togglePlay">
-        <i class="icon-playlist"></i>
-      </div>
-    </div>
-
-    <audio ref="audio"></audio>
+    </transition>
+    <audio ref="audio" :src="currentSong.url"></audio>
   </div>
 </template>
 
@@ -88,11 +92,18 @@ const transform = prefixStyle('transform')
 
 export default {
   computed: {
+    playIcon () {
+      return this.playing ? 'icon-pause' : 'icon-play'
+    },
+    miniPlayIcon () {
+      return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
+    },
     ...mapGetters([
-      'playList',
+      'currentIndex',
       'playing',
       'currentSong',
-      'fullScreen'
+      'fullScreen',
+      'playList'
     ])
   },
   methods: {
@@ -146,7 +157,7 @@ export default {
       this.$refs.cdWrapper.style[transform] = ''
     },
     togglePlay () {
-
+      this.setPlayState(!this.playing)
     },
     _getPosAndScale () {
       const targetWidth = 40
@@ -160,8 +171,38 @@ export default {
       return { x, y, scale }
     },
     ...mapMutations({
-      setFullScreen: 'SET_FULL_SCREEN'
+      setFullScreen: 'SET_FULL_SCREEN',
+      setPlayState: 'SET_PLAYING_STATE'
     })
+  },
+  watch: {
+    currentSong (newSong) {
+      // this.$refs.audio.src = newSong.url
+      // $nextTick应用场景
+      // 1，created（）钩子中操作DOM  
+      // 2，watch（）或者数据变化后要执行某个操作，或者要改变DOM的
+      this.$nextTick(() => {
+        this.$refs.audio.play()
+      })
+    },
+    playing (newPlaying) {
+      const audio = this.$refs.audio
+      this.$nextTick(() => {
+        newPlaying ? audio.play() : audio.pause()
+      })
+
+      if (!newPlaying) {
+        const cdWrapper = this.$refs.cdWrapper
+        // 设置cd是否旋转，配合.play animation:rotate 20s linear infinite样式的使用
+        if (fullScreen) {
+          // 如果全屏时大cd转动
+        } else {
+          // 反之小cd转动
+        }
+
+      }
+
+    }
   }
 
 }
