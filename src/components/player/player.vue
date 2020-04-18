@@ -138,17 +138,18 @@ export default {
 
       animations.runAnimation(this.$refs.cdWrapper, 'move', done)
     },
-    afterEnter () {
+    afterEnter (el) {
       animations.unregisterAnimation('move')
       this.$refs.cdWrapper.style.animation = ''
     },
     leave (el, done) {
       this.$refs.cdWrapper.style.transition = 'all 0.4s'
       const { x, y, scale } = this._getPosAndScale()
+      // console.log({ x, y, scale })
       this.$refs.cdWrapper.style[transform] = `translate3d(${x}px,${y}px,0) scale(${scale})`
-      const timer = setTimeout(done, 400)
+      // const timer = setTimeout(done, 400)
       this.$refs.cdWrapper.addEventListener('transitionend', () => {
-        clearTimeout(timer)
+        //   clearTimeout(timer)
         done()
       })
     },
@@ -190,18 +191,6 @@ export default {
       this.$nextTick(() => {
         newPlaying ? audio.play() : audio.pause()
       })
-
-      if (!newPlaying) {
-        const cdWrapper = this.$refs.cdWrapper
-        // 设置cd是否旋转，配合.play animation:rotate 20s linear infinite样式的使用
-        if (fullScreen) {
-          // 如果全屏时大cd转动
-        } else {
-          // 反之小cd转动
-        }
-
-      }
-
     }
   }
 

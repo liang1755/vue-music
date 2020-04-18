@@ -43,7 +43,7 @@ let vendor = (() => {
     standard: 'transform'
   }
   for (let key in transforms) {
-    if (elementStyle[transforms[key]]) {
+    if (elementStyle[transforms[key]] !== undefined) {
       return key
     }
   }
@@ -58,5 +58,5 @@ export function prefixStyle (style) {
     return style
   }
 
-  return vendor + style.charAt(0).toUpperCase + style.substr(1)
+  return vendor + style.charAt(0).toUpperCase() + style.substr(1)
 } 
