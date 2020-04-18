@@ -29,7 +29,7 @@
           <div class="middle-l">
             <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd">
-                <img :src="currentSong.image" alt class="image" />
+                <img @click="togglePlay" :src="currentSong.image" :class="cdcls" alt class="image" />
               </div>
             </div>
           </div>
@@ -44,17 +44,17 @@
             <div class="icon i-left">
               <i class="icon-sequence"></i>
             </div>
-            <div class="icon i-left">
-              <i class="icon-prev"></i>
+            <div class="icon i-left" :class="disabled">
+              <i class="icon-prev" @click="prev"></i>
             </div>
-            <div class="icon i-center">
+            <div class="icon i-center" :class="disabled">
               <i class="needslick" @click="togglePlay" :class="playIcon"></i>
             </div>
-            <div class="icon i-right">
-              <i class="icon-next"></i>
+            <div class="icon i-right" :class="disabled">
+              <i class="icon-next" @click="next"></i>
             </div>
             <div class="icon i-right">
-              <i class="icon"></i>
+              <i @click="toggleFavorite(currentSong)" class="icon icon-not-favorite"></i>
             </div>
           </div>
         </div>
@@ -80,7 +80,7 @@
         </div>
       </div>
     </transition>
-    <audio ref="audio" :src="currentSong.url"></audio>
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error"></audio>
   </div>
 </template>
 
@@ -91,12 +91,26 @@ import { prefixStyle } from '../../common/js/dom'
 const transform = prefixStyle('transform')
 
 export default {
+  data () {
+    return {
+      isReady: false
+    }
+  },
   computed: {
+    cdcls () {
+      return this.playing ? 'play' : ''
+    },
     playIcon () {
       return this.playing ? 'icon-pause' : 'icon-play'
     },
     miniPlayIcon () {
       return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
+    },
+    disabled () {
+      return this.isReady ? '' : 'disable'
+    },
+    favoriteIcon () {
+      return
     },
     ...mapGetters([
       'currentIndex',
@@ -158,7 +172,53 @@ export default {
       this.$refs.cdWrapper.style[transform] = ''
     },
     togglePlay () {
+      if (!this.isReady) {
+        return
+      }
       this.setPlayState(!this.playing)
+    },
+    prev () {
+      if (!this.isReady) {
+        // 如果缓冲没有完成按上一首下一首不做任何处理
+        return
+      }
+      let index = this.currentIndex - 1
+      if (index < 0) {
+        index = this.playList.length - 1
+      }
+      this.setCurrentIndex(index)
+      if (!this.playing) {
+        this.togglePlay()
+      }
+      // 上一首下一首完成后 标志位isReady复原
+      this.isReady = false
+    },
+    next () {
+      if (!this.isReady) {
+        return
+      }
+      let index = this.currentIndex + 1
+      if (index > this.playList.length - 1) {
+        index = 0
+      }
+      this.setCurrentIndex(index)
+      // 歌曲切换了，playing状态没有改变
+      if (!this.playing) {
+        this.togglePlay()
+      }
+
+      this.isReady = false
+    },
+    ready () {
+      // audio标签音乐缓冲完成，可以播放时触发canplay事件
+      this.isReady = true
+    },
+    error () {
+      // 如果音乐资源缺失，或者因为网络原因导致的错误，直接设置标志位 跳转到再一个prev next指向的音乐
+      this.isReady = true
+    },
+    toggleFavorite (currentSong) {
+
     },
     _getPosAndScale () {
       const targetWidth = 40
@@ -173,7 +233,8 @@ export default {
     },
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN',
-      setPlayState: 'SET_PLAYING_STATE'
+      setPlayState: 'SET_PLAYING_STATE',
+      setCurrentIndex: 'SET_CURRENT_INDEX'
     })
   },
   watch: {

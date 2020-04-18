@@ -116,9 +116,11 @@ export default {
         zIndex = 10
         this.$refs.bgImage.style['padding-top'] = 0
         this.$refs.bgImage.style['height'] = `${RESERVE_HEIGHT}px`
+        this.$refs.playBtn.style['display'] = 'none'
       } else {
         this.$refs.bgImage.style['padding-top'] = `70%`
         this.$refs.bgImage.style['height'] = 0
+        this.$refs.playBtn.style['display'] = ''
       }
       this.$refs.bgImage.style['z-index'] = zIndex
       this.$refs.bgImage.style[transform] = `scale(${scale})`
